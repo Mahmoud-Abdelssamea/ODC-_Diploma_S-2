@@ -7,8 +7,22 @@
     <title>Document</title>
 </head>
 <body>
-<section ></section>  
-<ul></ul> 
+    <form id="userData" >
+        <label for="status">UserName</label>
+        <br>
+        <input type="text" name="username" placeholder="Username" required>
+        <br>
+        <label for="status">Age</label>
+        <br>
+        <input type="number" name="age" placeholder="Age"  required>
+        <br>
+        <label for="status">Active status</label>
+        <input type="checkbox" name="status" >
+        <br><br>
+        <button type="submit">Create New User</button>
+    </form>
+
+    <ul id="list"></ul>
     <script src="index.js"></script>
 </body>
 </html>

@@ -1,51 +1,114 @@
-const section = document.querySelector("section");
-const ul = document.querySelector("ul");
+const form = document.querySelector("#userData");
+const ul = document.querySelector("#list");
 
-const apis = ["products", "carts", "posts"];
-const url = "https://dummyjson.com/";
+// Get the data from user
+const getDataFromUser = (event) => {
+  const username = event.target.username.value;
+  const age = event.target.age.value;
+  const status = event.target.status.checked;
+  const id = Date.now();
 
-// fetch data
-const getData = async (apiName) => {
-  try {
-    const data = await fetch(url + apiName);
-    const res = await data.json();
-    // call the callback function to handle the data
-    cb(res[apiName], null);
-  } catch (error) {
-    // call the callback function to handle the error
-    cb(null, error);
+  return { username, age, status, id };
+};
+
+// save the user data to local storage
+const writeInLocalStorage = (data) => {
+  localStorage.setItem("users", JSON.stringify(data));
+};
+
+// read all users from localstorage
+const readFromLocalStorage = (dataType = "json", storageKey = "users") => {
+  if (dataType == "json") {
+    try {
+      const data = JSON.parse(localStorage.getItem(storageKey));
+      if (!data) throw Error();
+      return data;
+    } catch (error) {
+      return [];
+    }
   }
 };
 
-// create an event lister for buttons
-const eventLister = (button) => {
-  const buttonName = document.querySelector(`.${button}`);
-  buttonName.addEventListener("click", (e) => {
-    e.preventDefault();
-    // clear the html from old data
-    ul.innerHTML = "";
-    // get data from api
-    getData(button);
-  });
+// delete fuction
+const removeUserFromStorage = (userId) => {
+  const updatedUsersList = allUsers.filter((user) => user.id != userId);
+  writeInLocalStorage(updatedUsersList);
 };
 
-// callback function
-const cb = (res, err) => {
-  if (err) console.log("something wrong");
-
-  // create a li element and append it in ul
-  res.forEach((element) => {
-    const li = document.createElement("li");
-    li.innerText = element.title || element.id;
-    ul.appendChild(li);
+// Update user status
+const updateStatus = (userId) => {
+  allUsers.forEach((user) => {
+    if (user.id == userId) user.status = !user.status;
   });
+  writeInLocalStorage(allUsers);
 };
 
-// create the buttons depend on the list (apis)
-apis.forEach((api) => {
-  const button = document.createElement("button");
-  button.innerText = api;
-  button.className = api;
-  section.appendChild(button);
-  eventLister(api);
+// create button
+const btn = (btnName) => {
+  const btn = document.createElement("button");
+  btn.className = btnName;
+  btn.innerText = btnName;
+  return btn;
+};
+
+// create li element
+const li = (user) => {
+  const li = document.createElement("li");
+  const name = document.createElement("span");
+  const age = document.createElement("span");
+  const status = document.createElement("button");
+  li.setAttribute("user_id", user.id);
+  name.innerText = `Name: ${user.username}`;
+  age.innerText = `, Age: ${user.age}`;
+  status.innerText = user.status ? " active " : " inactive";
+  status.className = "update";
+
+  const deleteBtn = btn("delete");
+
+  li.appendChild(name);
+  li.appendChild(age);
+  li.appendChild(status);
+  li.appendChild(deleteBtn);
+  ul.appendChild(li);
+};
+
+// read data from local storage
+let allUsers = readFromLocalStorage();
+
+// create an event listener to submit a new user
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const newUserData = getDataFromUser(e);
+
+  // add new user to all users list
+  allUsers.push(newUserData);
+
+  // add new list of users to localstorage
+  writeInLocalStorage(allUsers);
+
+  allUsers = readFromLocalStorage();
+
+  location.reload();
+});
+
+//--- show all users in list
+allUsers.forEach((user) => {
+  li(user);
+});
+
+// delete
+ul.addEventListener("click", (e) => {
+  if (e.target.classList.contains("delete")) {
+    removeUserFromStorage(e.target.parentElement.getAttribute("user_id"));
+    e.target.parentElement.remove();
+  }
+});
+
+// update the user status
+
+ul.addEventListener("click", (e) => {
+  if (e.target.classList.contains("update")) {
+    updateStatus(e.target.parentElement.getAttribute("user_id"));
+  }
+  location.reload();
 });
